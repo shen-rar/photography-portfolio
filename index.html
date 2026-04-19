@@ -24,16 +24,63 @@
       --shadow-sm:      0 2px 12px rgba(26,22,18,0.07);
       --shadow-md:      0 6px 28px rgba(26,22,18,0.10);
     }
-
     html { scroll-behavior: smooth; font-size: 16px; }
-
+    
     body {
-      background: var(--bg);
+      background: var(--bg); /* 1. Sets the absolute bottom layer color */
       color: var(--text-primary);
       font-family: 'Outfit', sans-serif;
       font-weight: 300;
       overflow-x: hidden;
     }
+
+    /* ══════════════════════════════════════════
+       BACKGROUND VIDEO
+    ══════════════════════════════════════════ */
+    .bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    /* Mask that blocks the video from showing through the nav/header area */
+    .bg-video-nav-mask {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 80px; /* covers nav height */
+      z-index: 1;   /* above video (0), below nav (100) */
+      pointer-events: none;
+      /* transparent — the hero section already covers this area */
+    }
+
+    /* ══════════════════════════════════════════
+       TEXT BACKDROP — semi-transparent black boxes
+       for body text paragraphs over the video
+    ══════════════════════════════════════════ */
+    .text-backdrop {
+      background: transparent;
+      padding: 18px 22px;
+      margin-bottom: 22px;
+      color: rgba(250, 249, 246, 0.92);
+      line-height: 1.88;
+      font-size: 0.98rem;
+      border-left: none;
+    }
+    .text-backdrop strong {
+      color: #fff;
+      font-weight: 500;
+    }
+    .text-backdrop:last-of-type { margin-bottom: 0; }
+
+    /* ══════════════════════════════════════════
+       NAVIGATION
+    ══════════════════════════════════════════ */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
@@ -42,13 +89,12 @@
       align-items: center;
       justify-content: space-between;
       padding: 28px 52px;
-      transition: padding 0.4s var(--transition),
-                  background 0.4s ease, box-shadow 0.4s ease;
+      transition: padding 0.4s var(--transition), box-shadow 0.4s ease, background 0.4s ease;
+      background: transparent;
     }
     nav.scrolled {
       padding: 16px 52px;
-      background: rgba(250, 249, 246, 0.96);
-      backdrop-filter: blur(14px);
+      background: var(--bg);
       box-shadow: var(--shadow-sm);
       border-bottom: 1px solid var(--border);
     }
@@ -57,27 +103,36 @@
       font-size: 1.35rem;
       font-weight: 600;
       letter-spacing: 0.16em;
-      color: var(--text-primary);
       text-decoration: none;
       text-transform: uppercase;
+      color: #FAF9F6;
+      transition: color 0.3s ease;
+      flex-shrink: 0;
     }
-    .nav-logo span { color: var(--accent); }
+    nav.scrolled .nav-logo { color: var(--text-primary); }
+    .nav-logo span { color: var(--accent-light); transition: color 0.3s ease; }
+    nav.scrolled .nav-logo span { color: var(--accent); }
+
+    /* Desktop nav links — top right only */
     .nav-links {
       display: flex;
       gap: 44px;
       list-style: none;
       align-items: center;
+      margin-left: auto;          /* push to the right */
     }
     .nav-links a {
       font-size: 0.73rem;
       font-weight: 400;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--text-secondary);
+      color: rgba(250,249,246,0.80);
       text-decoration: none;
       position: relative;
       transition: color 0.3s ease;
+      white-space: nowrap;
     }
+    nav.scrolled .nav-links a { color: var(--text-secondary); }
     .nav-links a::after {
       content: '';
       position: absolute;
@@ -86,20 +141,28 @@
       background: var(--accent);
       transition: width 0.35s var(--transition);
     }
-    .nav-links a:hover { color: var(--text-primary); }
+    .nav-links a:hover { color: #FAF9F6; }
+    nav.scrolled .nav-links a:hover { color: var(--text-primary); }
     .nav-links a:hover::after { width: 100%; }
-	
+
+    /* ══════════════════════════════════════════
+       HERO (SLIDESHOW)
+    ══════════════════════════════════════════ */
     #hero {
       position: relative;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
+      background: #0a0806; /* Solid dark background completely hides the video */
+      z-index: 2; /* 3. Sits ABOVE the video */
     }
     .hero-slide {
       position: absolute;
       inset: 0;
       background-size: cover;
       background-position: center;
+      background-repeat: no-repeat;
+      background-color: #0a0806;
       opacity: 0;
       transition: opacity 1.3s ease;
       animation: kenburns 14s ease-out infinite;
@@ -110,13 +173,15 @@
       100% { transform: scale(1.00); }
     }
     .hero-slide:nth-child(1) { background-image: url('IMG_0761-Enhanced-NR.jpg'); }
-    .hero-slide:nth-child(2) { background-image: url("IMG_6366.JPG"); }
+    .hero-slide:nth-child(2) { background-image: url('IMG_6366.JPG'); }
     .hero-slide:nth-child(3) { background-image: url('IMG_9599.jpg'); }
     .hero-slide:nth-child(4) { background-image: url('IMG_9630.jpg'); }
+
     .hero-overlay {
       position: absolute;
       inset: 0;
       background: linear-gradient(150deg,rgba(10,8,6,0.68) 0%,rgba(10,8,6,0.28) 55%,rgba(10,8,6,0.52) 100%);
+      z-index: 1;
     }
     .hero-content {
       position: absolute;
@@ -198,8 +263,15 @@
     }
     .hero-dot.active { width: 40px; background: var(--accent-light); }
     @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
-	
-    section { padding: 108px 52px; }
+
+    /* ══════════════════════════════════════════
+       SHARED SECTION STYLES
+    ══════════════════════════════════════════ */
+    section { 
+      padding: 108px 52px; 
+      position: relative; 
+      z-index: 2; /* 3. Ensures ALL sections sit safely above the video layer */
+    }
     .section-label {
       display: flex;
       align-items: center;
@@ -207,8 +279,9 @@
       font-size: 0.66rem;
       letter-spacing: 0.38em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--text-primary);
       margin-bottom: 14px;
+      font-weight: 600;
     }
     .section-label::before {
       content: '';
@@ -218,7 +291,7 @@
     .section-title {
       font-family: 'Cormorant Garamond', serif;
       font-size: clamp(2.4rem, 5vw, 4rem);
-      font-weight: 300;
+      font-weight: 600;
       line-height: 1.08;
       letter-spacing: -0.01em;
       color: var(--text-primary);
@@ -226,11 +299,18 @@
     }
     .section-title em { font-style: italic; color: var(--accent); }
 
-    #work { background: var(--bg); }
+    /* ══════════════════════════════════════════
+       GALLERY
+    ══════════════════════════════════════════ */
+    #work { background: rgba(250, 249, 246, 0); } /* Transparent enough to show bg video */
+    #work > .reveal:first-child { background: rgba(255, 255, 255, 0.40); padding: 20px 30px; border-radius: 8px; margin-bottom: 30px; }
     .gallery-filters {
       display: flex; gap: 6px;
       flex-wrap: wrap;
       margin-bottom: 44px;
+      background: rgba(255, 255, 255, 0.40);
+      padding: 20px 30px;
+      border-radius: 8px;
     }
     .filter-btn {
       padding: 9px 24px;
@@ -246,9 +326,7 @@
     }
     .filter-btn:hover { border-color: var(--accent); color: var(--text-primary); background: rgba(176,120,48,0.06); }
     .filter-btn.active { border-color: var(--accent); background: var(--accent); color: #FAF9F6; }
-    .gallery-grid { columns: 3; column-gap: 14px; }
-    @media (max-width: 1050px) { .gallery-grid { columns: 2; } }
-    @media (max-width: 600px)  { .gallery-grid { columns: 1; } }
+    .gallery-grid { columns: 3; column-gap: 14px; background: rgba(255, 255, 255, 0.40); padding: 30px; border-radius: 8px; }
     .gallery-item {
       break-inside: avoid;
       margin-bottom: 14px;
@@ -291,8 +369,12 @@
       color: var(--accent-light);
     }
     .gallery-item.hidden { display: none; }
+
+    /* ══════════════════════════════════════════
+       ABOUT
+    ══════════════════════════════════════════ */
     #about {
-      background: var(--bg2);
+      background: #F3F0EA;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 88px;
@@ -300,7 +382,6 @@
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
-    @media (max-width: 880px) { #about { grid-template-columns: 1fr; gap: 52px; } }
     .about-photo-wrap { position: relative; }
     .about-photo-wrap img {
       width: 100%;
@@ -361,14 +442,16 @@
       margin-top: 7px;
     }
 
+    /* ══════════════════════════════════════════
+       CONTACT
+    ══════════════════════════════════════════ */
     #contact {
-      background: var(--bg);
+      background: #FAF9F6;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 80px;
       align-items: start;
     }
-    @media (max-width: 880px) { #contact { grid-template-columns: 1fr; } }
     .contact-info .section-title { margin-bottom: 24px; }
     .contact-desc {
       font-size: 0.96rem;
@@ -444,11 +527,17 @@
       transition: background 0.28s ease, transform 0.2s ease, box-shadow 0.28s ease;
       align-self: flex-start;
     }
-    .form-submit:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .form-submit:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .form-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
     footer {
       background: var(--text-primary);
       padding: 56px 52px 36px;
+      position: relative;
+      z-index: 2; /* Sits above video */
     }
     .footer-top {
       display: flex;
@@ -458,7 +547,6 @@
       padding-bottom: 40px;
       border-bottom: 1px solid rgba(250,249,246,0.12);
     }
-    @media (max-width: 720px) { .footer-top { flex-direction: column; gap: 28px; align-items: flex-start; } }
     .footer-logo {
       font-family: 'Cormorant Garamond', serif;
       font-size: 1.9rem;
@@ -493,7 +581,6 @@
       justify-content: space-between;
       align-items: center;
     }
-    @media (max-width: 560px) { .footer-bottom { flex-direction: column; gap: 12px; } }
     .footer-copy { font-size: 0.71rem; color: rgba(250,249,246,0.35); letter-spacing: 0.08em; }
     .footer-nav { display: flex; gap: 26px; }
     .footer-nav a {
@@ -505,13 +592,15 @@
     }
     .footer-nav a:hover { color: var(--accent-light); }
 
+    /* ══════════════════════════════════════════
+       UTILITIES & LIGHTBOX
+    ══════════════════════════════════════════ */
     .reveal {
       opacity: 0;
       transform: translateY(32px);
       transition: opacity 0.85s var(--transition), transform 0.85s var(--transition);
     }
     .reveal.visible { opacity: 1; transform: translateY(0); }
-
     #lightbox {
       position: fixed;
       inset: 0;
@@ -539,29 +628,109 @@
       cursor: pointer;
       transition: color 0.28s ease;
       line-height: 1;
+      z-index: 202;
     }
     .lb-close:hover { color: var(--accent-light); }
-
     .accent-divider {
       width: 100%; height: 3px;
       background: linear-gradient(to right, var(--accent) 0%, var(--accent-light) 50%, transparent 100%);
+      position: relative;
+      z-index: 2; /* Sits above video */
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — TABLET  ≤ 1050px
+    ══════════════════════════════════════════ */
+    @media (max-width: 1050px) {
+      .gallery-grid { columns: 2; }
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — WIDE MOBILE  ≤ 880px
+    ══════════════════════════════════════════ */
+    @media (max-width: 880px) {
+      #about { grid-template-columns: 1fr; gap: 52px; }
+      #contact { grid-template-columns: 1fr; }
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — MOBILE  ≤ 768px
+    ══════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      section { padding: 72px 22px; }
+      nav { padding: 18px 22px; }
+      nav.scrolled { padding: 14px 22px; }
+      .nav-links { gap: 20px; }
+      .nav-links a { font-size: 0.65rem; letter-spacing: 0.16em; }
+
+      #hero { height: 100svh; } 
+      .hero-slide { background-size: contain; background-position: center center; }
+      .hero-slide::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: inherit;
+        background-size: cover;
+        background-position: center;
+        filter: blur(18px) brightness(0.35) saturate(0.7);
+        transform: scale(1.08); 
+        z-index: -1;
+      }
+      .hero-content { left: 22px; right: 22px; bottom: 12vh; }
+      .hero-title { font-size: clamp(2.6rem, 10vw, 3.6rem); }
+      .hero-dots { left: 22px; bottom: 26px; }
+      .hero-scroll-hint { right: 22px; bottom: 32px; }
+      .gallery-grid { columns: 1; }
+      .about-stats { gap: 15px; }
+      #contact { gap: 40px; }
+      .lb-close { top: 15px; right: 20px; }
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — SMALL MOBILE  ≤ 480px
+    ══════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .hero-title { font-size: clamp(2.2rem, 11vw, 3rem); }
+      .section-title { font-size: clamp(2rem, 9vw, 2.8rem); }
+      footer { padding: 44px 22px 30px; }
+      .footer-top { flex-direction: column; align-items: flex-start; gap: 28px; padding-bottom: 32px; }
+      .footer-logo { font-size: 1.5rem; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 18px; }
+      .footer-nav { flex-wrap: wrap; gap: 16px 24px; }
+      
+      .gallery-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .gallery-filters::-webkit-scrollbar { display: none; }
+      .filter-btn { flex-shrink: 0; }
+      .contact-link { font-size: 0.78rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Lightbox ─────────────────────────────────────── -->
+<video class="bg-video" autoplay loop muted playsinline>
+  <source src="71122-537102350.mp4" type="video/mp4" />
+</video>
+
 <div id="lightbox">
   <span class="lb-close" id="lbClose">×</span>
   <img id="lbImg" src="" alt="" />
 </div>
 
-<!-- ── Navigation ───────────────────────────────────── -->
 <nav id="mainNav">
   <a href="#hero" class="nav-logo">Praveen<span>.</span>Ganesh</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#work">Portfolio</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
 </nav>
 
-<!-- ── Hero ─────────────────────────────────────────── -->
 <section id="hero">
   <div class="hero-slide active"></div>
   <div class="hero-slide"></div>
@@ -587,7 +756,6 @@
 
 <div class="accent-divider"></div>
 
-<!-- ── Work / Gallery ────────────────────────────────── -->
 <section id="work">
   <div class="reveal">
     <p class="section-label">Selected Work</p>
@@ -600,104 +768,81 @@
     <button class="filter-btn" data-filter="street">Street</button>
   </div>
   <div class="gallery-grid" id="galleryGrid">
-
-    <!-- PORTRAIT 1 -->
     <div class="gallery-item" data-category="portrait">
       <img src="IMG_9599.jpg" alt="Blue Haze" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Blue Haze</h3><span>Portrait</span></div></div>
     </div>
-    <!-- PORTRAIT 2 -->
     <div class="gallery-item" data-category="portrait">
       <img src="IMG_9630.jpg" alt="golden aura" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Golden Aura</h3><span>Portrait</span></div></div>
     </div>
-    <!-- PORTRAIT 3 -->
     <div class="gallery-item" data-category="portrait">
       <img src="IMG_9425.jpg" alt="Guitar" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Guitar</h3><span>Portrait</span></div></div>
     </div>
-    <!-- PORTRAIT 4 -->
     <div class="gallery-item" data-category="portrait">
       <img src="IMG_8424.JPG" alt="Happy guy" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Happy guy</h3><span>Portrait</span></div></div>
     </div>
-    <!-- PORTRAIT 5 -->
     <div class="gallery-item" data-category="portrait">
       <img src="IMG_9667.jpg" alt="The Duality" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Duality</h3><span>Portrait</span></div></div>
     </div>
-    <!-- PORTRAIT 6 -->
     <div class="gallery-item" data-category="portrait">
       <img src="IMG_0369-2.jpg" alt="The Pain" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Pain</h3><span>Portrait</span></div></div>
     </div>
-
-    <!-- WILDLIFE 1 -->
     <div class="gallery-item" data-category="wildlife">
       <img src="IMG_4611-2.jpg" alt="The Shy Tiger" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Shy Tiger</h3><span>Wildlife</span></div></div>
     </div>
-    <!-- WILDLIFE 2 -->
     <div class="gallery-item" data-category="wildlife">
       <img src="IMG_4631-2-2.jpg" alt="The Preen Swan" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Preen Swan</h3><span>Wildlife</span></div></div>
     </div>
-    <!-- WILDLIFE 3 -->
     <div class="gallery-item" data-category="wildlife">
       <img src="IMG_4810.JPG" alt="The Watching Sweens" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Watching Sweens</h3><span>Wildlife</span></div></div>
     </div>
-    <!-- WILDLIFE 4 -->
     <div class="gallery-item" data-category="wildlife">
       <img src="IMG_4965-2.jpg" alt="The Posing Lemur" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Posing Lemur</h3><span>Wildlife</span></div></div>
     </div>
-    <!-- WILDLIFE 5 -->
     <div class="gallery-item" data-category="wildlife">
       <img src="IMG_6366.JPG" alt="Parrot" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Parrot</h3><span>Wildlife</span></div></div>
     </div>
-    <!-- WILDLIFE 6 -->
     <div class="gallery-item" data-category="wildlife">
       <img src="Untitled-1 - 14-03-2026 22-40-41.jpg" alt="The Swan" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Swan</h3><span>Wildlife</span></div></div>
     </div>
-
-    <!-- STREET 1 -->
     <div class="gallery-item" data-category="street">
       <img src="IMG_0130.jpg" alt="The Crowd" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Crowd</h3><span>Street</span></div></div>
     </div>
-    <!-- STREET 2 -->
     <div class="gallery-item" data-category="street">
       <img src="IMG_0200.jpg" alt="Cow" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Cow</h3><span>Street</span></div></div>
     </div>
-    <!-- STREET 3 -->
     <div class="gallery-item" data-category="street">
       <img src="IMG_0269.jpg" alt="Pongal Pot" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Pongal Pot</h3><span>Street</span></div></div>
     </div>
-    <!-- STREET 4 -->
     <div class="gallery-item" data-category="street">
       <img src="IMG_0455.jpg" alt="Bharatanatyam" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Bharatanatyam</h3><span>Street</span></div></div>
     </div>
-    <!-- STREET 5 -->
     <div class="gallery-item" data-category="street">
       <img src="IMG_0761-Enhanced-NR.jpg" alt="Spitting Fire" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>Evening Walk</h3><span>Street</span></div></div>
     </div>
-    <!-- STREET 6 -->
     <div class="gallery-item" data-category="street">
       <img src="IMG_1178.jpg" alt="The Statue" loading="lazy" />
       <div class="gallery-overlay"><div class="gallery-meta"><h3>The Statue</h3><span>Street</span></div></div>
     </div>
-
   </div>
 </section>
 
-<!-- ── About ─────────────────────────────────────────── -->
 <section id="about">
   <div class="about-photo-wrap reveal">
     <img src="IMG_9944.jpg" alt="Praveen Ganesh — Photographer" />
@@ -705,12 +850,12 @@
   <div class="about-content reveal">
     <p class="section-label">About Me</p>
     <h2 class="section-title">The Eye<br>Behind<br>the <em>Lens</em></h2>
-    <p class="about-text">
+    <p class="about-text text-backdrop">
       I'm <strong>Praveen Ganesh</strong>, a visual storyteller based in Chennai, India.
       My work spans portrait, wildlife, and street photography — each frame a search for
       <strong>authentic light and honest emotion</strong>.
     </p>
-    <p class="about-text">
+    <p class="about-text text-backdrop">
       Drawn to the quiet dignity of everyday people and the raw energy of the natural world,
       I craft images that linger long after the shutter clicks. Available for commissions,
       collaborations, and editorial projects that believe in
@@ -729,12 +874,11 @@
   </div>
 </section>
 
-<!-- ── Contact ───────────────────────────────────────── -->
 <section id="contact">
   <div class="contact-info reveal">
     <p class="section-label">Get In Touch</p>
     <h2 class="section-title">Let's Create<br><em>Together</em></h2>
-    <p class="contact-desc">
+    <p class="contact-desc text-backdrop">
       Available for portrait sessions, wildlife collaborations, and street photography projects.
       Whether you have a creative idea or just want to connect — I'd love to hear from you.
     </p>
@@ -752,19 +896,19 @@
   <form class="contact-form reveal" onsubmit="handleSubmit(event)">
     <div class="form-group">
       <label class="form-label">Your Name</label>
-      <input class="form-input" type="text" placeholder="Enter your name" required />
+      <input class="form-input" type="text" name="name" placeholder="Enter your name" required />
     </div>
     <div class="form-group">
       <label class="form-label">Email Address</label>
-      <input class="form-input" type="email" placeholder="your@email.com" required />
+      <input class="form-input" type="email" name="email" placeholder="your@email.com" required />
     </div>
     <div class="form-group">
       <label class="form-label">Subject</label>
-      <input class="form-input" type="text" placeholder="Commission / Collaboration / General" />
+      <input class="form-input" type="text" name="subject" placeholder="Commission / Collaboration / General" />
     </div>
     <div class="form-group">
       <label class="form-label">Message</label>
-      <textarea class="form-textarea" placeholder="Tell me about your project…" required></textarea>
+      <textarea class="form-textarea" name="message" placeholder="Tell me about your project…" required></textarea>
     </div>
     <button type="submit" class="form-submit">
       Send Message
@@ -775,7 +919,6 @@
   </form>
 </section>
 
-<!-- ── Footer ────────────────────────────────────────── -->
 <footer>
   <div class="footer-top">
     <div>
@@ -797,22 +940,27 @@
 </footer>
 
 <script>
+  /* ── Slideshow (Restored) ── */
   const slides = document.querySelectorAll('.hero-slide');
   const dots   = document.querySelectorAll('.hero-dot');
-  let current  = 0;
-  setInterval(() => {
-    slides[current].classList.remove('active');
-    dots[current].classList.remove('active');
-    current = (current + 1) % slides.length;
-    slides[current].classList.add('active');
-    dots[current].classList.add('active');
-  }, 5500);
+  if (slides.length > 0) {
+    let current = 0;
+    setInterval(() => {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = (current + 1) % slides.length;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }, 5500);
+  }
 
+  /* ── Nav scroll styling ── */
   const nav = document.getElementById('mainNav');
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY > 56);
   }, { passive: true });
 
+  /* ── Scroll Reveal ── */
   const revealObs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('visible'); revealObs.unobserve(e.target); }
@@ -820,6 +968,7 @@
   }, { threshold: 0.11 });
   document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
+  /* ── Gallery Filter ── */
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -831,29 +980,45 @@
     });
   });
 
+  /* ── Lightbox ── */
   const lightbox = document.getElementById('lightbox');
   const lbImg    = document.getElementById('lbImg');
   document.querySelectorAll('.gallery-item img').forEach(img => {
     img.addEventListener('click', () => {
-      lbImg.src = img.src.replace('w=800', 'w=1600');
+      lbImg.src = img.src;
       lbImg.alt = img.alt;
       lightbox.classList.add('open');
       document.body.style.overflow = 'hidden';
     });
   });
-  function closeLightbox() { lightbox.classList.remove('open'); document.body.style.overflow = ''; }
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
   document.getElementById('lbClose').addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
+  /* ── Contact Form ── */
   function handleSubmit(e) {
     e.preventDefault();
-    const btn = e.target.querySelector('.form-submit');
+    const btn  = e.target.querySelector('.form-submit');
     const orig = btn.innerHTML;
-    btn.textContent = '✓ Message Sent!';
-    btn.style.background = '#4a7c59';
+    btn.textContent = 'Sending…';
     btn.disabled = true;
-    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.disabled = false; e.target.reset(); }, 3500);
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyPY_j-dYjru492cE5rskia5UZCdP-JMrMe-q6qRcU5nLyJ_TBRHwRYrVTECD_obrc7pg/exec';
+    fetch(scriptURL, { method: 'POST', body: new FormData(e.target) })
+      .then(() => {
+        btn.textContent = '✓ Message Sent!';
+        btn.style.background = '#4a7c59';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.disabled = false; e.target.reset(); }, 3500);
+      })
+      .catch(err => {
+        console.error(err);
+        btn.textContent = 'Error! Try Again.';
+        btn.style.background = '#c94c4c';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.disabled = false; }, 3500);
+      });
   }
 </script>
 </body>
